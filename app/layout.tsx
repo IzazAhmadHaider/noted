@@ -1,10 +1,8 @@
-import type { Metadata } from "next";
-import "./globals.css";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Noted",
-  description: "Minimal single-page note-taking app",
-};
+import { Metadata } from "next";
+import "./globals.css";
+import { AuthProvider } from "@/lib/auth-context";
 
 export default function RootLayout({
   children,
@@ -13,7 +11,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

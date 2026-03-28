@@ -45,7 +45,7 @@ type NotePage = {
 
 
 
-export function NoteEditor() {
+export function NoteEditor({ userId }: { userId: string }) {
   const [pages, setPages] = useState<NotePage[]>([]);
   const [activePageId, setActivePageId] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -95,6 +95,7 @@ export function NoteEditor() {
           title: "Page 1",
           page_number: 1,
           content_json: DEFAULT_NOTE,
+          user_id: userId,
         },
       ])
       .select()
@@ -111,7 +112,7 @@ export function NoteEditor() {
       pageNumber: data.page_number,
       content: data.content_json,
     };
-  }, []);
+  }, [userId]);
 
   const loadPages = useCallback(async () => {
     setIsLoading(true);
@@ -119,6 +120,7 @@ export function NoteEditor() {
     const { data, error } = await supabase
       .from("pages")
       .select("*")
+      .eq("user_id", userId)
       .order("page_number", { ascending: true });
 
     if (error) {
@@ -154,7 +156,7 @@ export function NoteEditor() {
     }
 
     setIsLoading(false);
-  }, [createFirstPage]);
+  }, [createFirstPage, userId]);
 
   const savePageToSupabase = useCallback(
     async (pageId: string, content: JSONContent) => {
@@ -253,6 +255,7 @@ export function NoteEditor() {
           title: `Page ${nextPageNumber}`,
           page_number: nextPageNumber,
           content_json: DEFAULT_NOTE,
+          user_id: userId,
         },
       ])
       .select()
@@ -273,7 +276,7 @@ export function NoteEditor() {
     setPages((prev) => [...prev, newPage]);
     setActivePageId(newPage.id);
     setIsEditMode(true);
-  }, [pages.length]);
+  }, [pages.length, userId]);
 
 
 
