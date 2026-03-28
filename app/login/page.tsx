@@ -38,73 +38,116 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Noted</h1>
-          <p className="mt-2 text-gray-600">
-            {isSignUp ? "Create your account" : "Welcome back"}
-          </p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4">
+      {/* Decorative gradient orbs */}
+      <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-purple-500 opacity-20 blur-3xl" />
+      <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-500 opacity-20 blur-3xl" />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-              {error}
+      <div className="relative w-full max-w-md">
+        <div className="overflow-hidden rounded-3xl bg-white/95 backdrop-blur-lg shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-b from-white to-slate-50" />
+          <div className="relative p-10">
+            {/* Logo and Title */}
+            <div className="mb-10 text-center">
+              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600">
+                <span className="text-xl font-bold text-white">✎</span>
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900">Noted</h1>
+              <p className="mt-3 text-sm text-slate-600">
+                {isSignUp
+                  ? "Create your account and start writing"
+                  : "Welcome back to your notes"}
+              </p>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email Input */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder-slate-400 transition-all focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:outline-none"
+                  placeholder="you@example.com"
+                />
+              </div>
 
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError("");
-            }}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            {isSignUp
-              ? "Already have an account? Sign in"
-              : "Don't have an account? Sign up"}
-          </button>
+              {/* Password Input */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder-slate-400 transition-all focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:outline-none"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 font-semibold text-white rounded-xl transition-all hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Processing...
+                  </span>
+                ) : isSignUp ? (
+                  "Create Account"
+                ) : (
+                  "Sign In"
+                )}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="my-7 flex items-center gap-3">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="text-xs text-slate-400">or</span>
+              <div className="flex-1 border-t border-slate-200" />
+            </div>
+
+            {/* Toggle Sign In / Sign Up */}
+            <div className="text-center">
+              <p className="text-sm text-slate-600">
+                {isSignUp ? "Already have an account? " : "New to Noted? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError("");
+                  }}
+                  className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+                >
+                  {isSignUp ? "Sign In" : "Create one"}
+                </button>
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Your notes, your privacy, always encrypted
+        </p>
       </div>
     </div>
   );

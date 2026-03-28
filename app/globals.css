@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #18181b;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -19,36 +19,154 @@ body {
 }
 
 .noted-editor {
-  line-height: 1.65;
-  font-size: 1.05rem;
-  color: #18181b;
+  line-height: 1.75;
+  font-size: 1.1rem;
+  color: #0f172a;
+  padding: 2.5rem 3rem;
+  min-height: calc(100vh - 300px);
+  letter-spacing: 0.2px;
 }
 
 .noted-editor > * + * {
-  margin-top: 0.9rem;
+  margin-top: 1.2rem;
 }
 
 .noted-editor h1 {
-  font-size: 1.8rem;
-  line-height: 1.25;
-  font-weight: 650;
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
 }
 
 .noted-editor h2 {
-  font-size: 1.45rem;
+  font-size: 1.75rem;
   line-height: 1.3;
-  font-weight: 650;
+  font-weight: 700;
+  margin-top: 1.3rem;
+  margin-bottom: 0.4rem;
+  color: #1e293b;
+}
+
+.noted-editor h3 {
+  font-size: 1.35rem;
+  line-height: 1.35;
+  font-weight: 600;
+  margin-top: 1.1rem;
+  color: #334155;
+}
+
+.noted-editor p {
+  word-spacing: 0.05em;
+}
+
+.noted-editor ul,
+.noted-editor ol {
+  padding-left: 1.75rem;
 }
 
 .noted-editor ul {
   list-style: disc;
+}
+
+.noted-editor ul li::marker {
+  color: #7c3aed;
+}
+
+.noted-editor ol li::marker {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.noted-editor blockquote {
+  border-left: 4px solid #7c3aed;
   padding-left: 1.5rem;
+  color: #475569;
+  font-style: italic;
+  margin-left: 0;
+}
+
+.noted-editor code {
+  background-color: #f1f5f9;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.95em;
+  color: #d946ef;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.noted-editor pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+
+.noted-editor pre code {
+  background-color: transparent;
+  color: #e2e8f0;
+  padding: 0;
+  border-radius: 0;
+}
+
+.noted-editor a {
+  color: #7c3aed;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  transition: all 0.2s ease;
+}
+
+.noted-editor a:hover {
+  color: #6d28d9;
+}
+
+.noted-editor strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.noted-editor em {
+  font-style: italic;
+  color: #334155;
+}
+
+.noted-editor mark {
+  background-color: #fde047;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* Task list styling */
+.noted-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.noted-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.noted-editor ul[data-type="taskList"] input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  accent-color: #7c3aed;
 }
 
 .noted-editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #a1a1aa;
+  color: #cbd5e1;
   pointer-events: none;
   height: 0;
+  font-weight: 300;
 }

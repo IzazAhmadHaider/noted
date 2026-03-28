@@ -348,16 +348,21 @@ export function NoteEditor({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 py-8 md:px-8">
-      <header className="mb-4 flex items-center justify-end">
-        <div className="flex items-center gap-2">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 md:px-8">
+      {/* Page Controls */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">My Pages</h2>
+          <p className="text-sm text-slate-600 mt-1">Organize your thoughts</p>
+        </div>
+        <div className="flex items-center gap-3">
           <select
             value={activePageId}
             onChange={(event) => {
               setMenuOpen(false);
               setActivePageId(event.target.value);
             }}
-            className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 outline-none transition-colors focus:border-zinc-400"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
             aria-label="Switch page"
           >
             {pages.map((page) => (
@@ -370,133 +375,135 @@ export function NoteEditor({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={createNewPage}
-            className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-300"
           >
-            New page
+            + New Page
           </button>
 
           <button
             type="button"
             onClick={() => setIsEditMode((prev) => !prev)}
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white transition-colors hover:bg-zinc-700"
+            className="rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-2 text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-purple-500/25"
           >
-            {isEditMode ? "Done" : "Edit"}
+            {isEditMode ? "✓ Done" : "✎ Edit"}
           </button>
         </div>
-      </header>
+      </div>
 
-      <div className="relative flex-1 rounded-2xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_30px_rgba(0,0,0,0.03)] transition-all duration-200">
+      {/* Editor Container */}
+      <div className="relative flex-1 rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-200 overflow-hidden">
+        {/* Toolbar Area */}
         <div
           className={[
-            "px-4 pt-4 transition-all duration-200",
+            "border-b border-slate-200 transition-all duration-200",
             isEditMode
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none -translate-y-1 opacity-0",
           ].join(" ")}
         >
-          <EditorToolbar
-            canBold={editor.can().chain().focus().toggleBold().run()}
-            canItalic={editor.can().chain().focus().toggleItalic().run()}
-            canUnderline={editor.can().chain().focus().toggleUnderline().run()}
-            canStrike={editor.can().chain().focus().toggleStrike().run()}
-            canHeading1={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleHeading({ level: 1 })
-              .run()}
-            canHeading2={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleHeading({ level: 2 })
-              .run()}
-            canHeading3={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleHeading({ level: 3 })
-              .run()}
-            canBulletList={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleBulletList()
-              .run()}
-            canOrderedList={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleOrderedList()
-              .run()}
-            canTaskList={editor.can().chain().focus().toggleTaskList().run()}
-            canBlockquote={editor
-              .can()
-              .chain()
-              .focus()
-              .toggleBlockquote()
-              .run()}
-            canCodeBlock={editor.can().chain().focus().toggleCodeBlock().run()}
-            canHorizontalRule={editor
-              .can()
-              .chain()
-              .focus()
-              .setHorizontalRule()
-              .run()}
-            canUndo={editor.can().undo()}
-            canRedo={editor.can().redo()}
-            isBold={editor.isActive("bold")}
-            isItalic={editor.isActive("italic")}
-            isUnderline={editor.isActive("underline")}
-            isStrike={editor.isActive("strike")}
-            isHeading1={editor.isActive("heading", { level: 1 })}
-            isHeading2={editor.isActive("heading", { level: 2 })}
-            isHeading3={editor.isActive("heading", { level: 3 })}
-            isBulletList={editor.isActive("bulletList")}
-            isOrderedList={editor.isActive("orderedList")}
-            isTaskList={editor.isActive("taskList")}
-            isBlockquote={editor.isActive("blockquote")}
-            isCodeBlock={editor.isActive("codeBlock")}
-            onBold={() => editor.chain().focus().toggleBold().run()}
-            onItalic={() => editor.chain().focus().toggleItalic().run()}
-            onUnderline={() => editor.chain().focus().toggleUnderline().run()}
-            onStrike={() => editor.chain().focus().toggleStrike().run()}
-            onHeading1={() =>
-              editor.chain().focus().toggleHeading({ level: 1 }).run()
-            }
-            onHeading2={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-            onHeading3={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-            onBulletList={() => editor.chain().focus().toggleBulletList().run()}
-            onOrderedList={() =>
-              editor.chain().focus().toggleOrderedList().run()
-            }
-            onTaskList={() => editor.chain().focus().toggleTaskList().run()}
-            onBlockquote={() => editor.chain().focus().toggleBlockquote().run()}
-            onCodeBlock={() => editor.chain().focus().toggleCodeBlock().run()}
-            onHorizontalRule={() =>
-              editor.chain().focus().setHorizontalRule().run()
-            }
-            onUndo={() => editor.chain().focus().undo().run()}
-            onRedo={() => editor.chain().focus().redo().run()}
-            onTextColor={(color) =>
-              editor.chain().focus().setColor(color).run()
-            }
-            onHighlightColor={(color) =>
-              editor.chain().focus().toggleHighlight({ color }).run()
-            }
-          />
+          <div className="px-6 py-4">
+            <EditorToolbar
+              canBold={editor.can().chain().focus().toggleBold().run()}
+              canItalic={editor.can().chain().focus().toggleItalic().run()}
+              canUnderline={editor.can().chain().focus().toggleUnderline().run()}
+              canStrike={editor.can().chain().focus().toggleStrike().run()}
+              canHeading1={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleHeading({ level: 1 })
+                .run()}
+              canHeading2={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleHeading({ level: 2 })
+                .run()}
+              canHeading3={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleHeading({ level: 3 })
+                .run()}
+              canBulletList={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleBulletList()
+                .run()}
+              canOrderedList={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleOrderedList()
+                .run()}
+              canTaskList={editor.can().chain().focus().toggleTaskList().run()}
+              canBlockquote={editor
+                .can()
+                .chain()
+                .focus()
+                .toggleBlockquote()
+                .run()}
+              canCodeBlock={editor.can().chain().focus().toggleCodeBlock().run()}
+              canHorizontalRule={editor
+                .can()
+                .chain()
+                .focus()
+                .setHorizontalRule()
+                .run()}
+              canUndo={editor.can().undo()}
+              canRedo={editor.can().redo()}
+              isBold={editor.isActive("bold")}
+              isItalic={editor.isActive("italic")}
+              isUnderline={editor.isActive("underline")}
+              isStrike={editor.isActive("strike")}
+              isHeading1={editor.isActive("heading", { level: 1 })}
+              isHeading2={editor.isActive("heading", { level: 2 })}
+              isHeading3={editor.isActive("heading", { level: 3 })}
+              isBulletList={editor.isActive("bulletList")}
+              isOrderedList={editor.isActive("orderedList")}
+              isTaskList={editor.isActive("taskList")}
+              isBlockquote={editor.isActive("blockquote")}
+              isCodeBlock={editor.isActive("codeBlock")}
+              onBold={() => editor.chain().focus().toggleBold().run()}
+              onItalic={() => editor.chain().focus().toggleItalic().run()}
+              onUnderline={() => editor.chain().focus().toggleUnderline().run()}
+              onStrike={() => editor.chain().focus().toggleStrike().run()}
+              onHeading1={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              onHeading2={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              onHeading3={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+              onBulletList={() => editor.chain().focus().toggleBulletList().run()}
+              onOrderedList={() =>
+                editor.chain().focus().toggleOrderedList().run()
+              }
+              onTaskList={() => editor.chain().focus().toggleTaskList().run()}
+              onBlockquote={() => editor.chain().focus().toggleBlockquote().run()}
+              onCodeBlock={() => editor.chain().focus().toggleCodeBlock().run()}
+              onHorizontalRule={() =>
+                editor.chain().focus().setHorizontalRule().run()
+              }
+              onUndo={() => editor.chain().focus().undo().run()}
+              onRedo={() => editor.chain().focus().redo().run()}
+              onTextColor={(color) =>
+                editor.chain().focus().setColor(color).run()
+              }
+              onHighlightColor={(color) =>
+                editor.chain().focus().toggleHighlight({ color }).run()
+              }
+            />
+          </div>
         </div>
 
+        {/* Editor Content Area */}
         <div
           ref={editorWrapRef}
-          className={[
-            "relative rounded-2xl border border-transparent bg-white transition-all duration-200",
-            isEditMode ? "border-zinc-200 shadow-sm" : "",
-          ].join(" ")}
+          className="relative bg-white transition-all duration-200"
         >
           <EditorContent editor={editor} />
         </div>
