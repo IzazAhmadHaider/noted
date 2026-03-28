@@ -1,76 +1,57 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, JSONContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorToolbar } from "./editor-toolbar";
-import { BlockInsertMenu } from "./block-insert-menu";
+import { supabase } from "@/lib/supabase";
+import Underline from "@tiptap/extension-underline";
+import Strike from "@tiptap/extension-strike";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import Link from "@tiptap/extension-link";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import { TextStyle } from "@tiptap/extension-text-style";
 
-const STORAGE_KEY = "noted.pages.v1";
-const DEFAULT_NOTE = "<p></p>";
+type EditorToolbarProps = {
+  canBold: boolean;
+  canToggleHeading: boolean;
+  canToggleBulletList: boolean;
+  isBold: boolean;
+  isHeading: boolean;
+  isBulletList: boolean;
+  onBold: () => void;
+  onHeading: (level: number) => void;
+  onBulletList: () => void;
+};
+
+const DEFAULT_NOTE: JSONContent = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+    },
+  ],
+};
 
 type NotePage = {
   id: string;
   title: string;
-  content: string;
+  pageNumber: number;
+  content: JSONContent;
 };
 
-type StoredData = {
-  activePageId: string;
-  pages: NotePage[];
-};
 
-type PlusAnchor = {
-  top: number;
-  visible: boolean;
-};
-
-function createDefaultPage(): NotePage {
-  return {
-    id: crypto.randomUUID(),
-    title: "Page 1",
-    content: DEFAULT_NOTE,
-  };
-}
-
-function getInitialData(): StoredData {
-  if (typeof window === "undefined") {
-    const page = createDefaultPage();
-    return { activePageId: page.id, pages: [page] };
-  }
-
-  const stored = localStorage.getItem(STORAGE_KEY);
-
-  if (!stored) {
-    const page = createDefaultPage();
-    return { activePageId: page.id, pages: [page] };
-  }
-
-  try {
-    const parsed = JSON.parse(stored) as StoredData;
-    if (!parsed.pages?.length) {
-      const page = createDefaultPage();
-      return { activePageId: page.id, pages: [page] };
-    }
-
-    return parsed;
-  } catch {
-    const page = createDefaultPage();
-    return { activePageId: page.id, pages: [page] };
-  }
-}
 
 export function NoteEditor() {
-  const initialData = useMemo(() => getInitialData(), []);
-  const [pages, setPages] = useState<NotePage[]>(initialData.pages);
-  const [activePageId, setActivePageId] = useState(initialData.activePageId);
+  const [pages, setPages] = useState<NotePage[]>([]);
+  const [activePageId, setActivePageId] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [plusAnchor, setPlusAnchor] = useState<PlusAnchor>({
-    top: 0,
-    visible: false,
-  });
+
   const editorWrapRef = useRef<HTMLDivElement | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   const skipSaveForHydrationRef = useRef(true);
@@ -90,7 +71,105 @@ export function NoteEditor() {
       Placeholder.configure({
         placeholder: "Start writing...",
       }),
+      TaskList,
+      TaskItem,
+      TextStyle,
+      Color.configure({
+        types: ["textStyle"],
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
     ],
+    [],
+  );
+
+  const createFirstPage = useCallback(async (): Promise<NotePage | null> => {
+    const firstPageId = crypto.randomUUID();
+
+    const { data, error } = await supabase
+      .from("pages")
+      .insert([
+        {
+          id: firstPageId,
+          title: "Page 1",
+          page_number: 1,
+          content_json: DEFAULT_NOTE,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating first page:", error.message);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+      pageNumber: data.page_number,
+      content: data.content_json,
+    };
+  }, []);
+
+  const loadPages = useCallback(async () => {
+    setIsLoading(true);
+
+    const { data, error } = await supabase
+      .from("pages")
+      .select("*")
+      .order("page_number", { ascending: true });
+
+    if (error) {
+      console.error("Error loading pages:", error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const mappedPages: NotePage[] =
+      data?.map(
+        (page: {
+          id: string;
+          title: string;
+          page_number: number;
+          content_json: JSONContent;
+        }) => ({
+          id: page.id,
+          title: page.title,
+          pageNumber: page.page_number,
+          content: page.content_json,
+        }),
+      ) ?? [];
+
+    if (mappedPages.length > 0) {
+      setPages(mappedPages);
+      setActivePageId(mappedPages[0].id);
+    } else {
+      const firstPage = await createFirstPage();
+      if (firstPage) {
+        setPages([firstPage]);
+        setActivePageId(firstPage.id);
+      }
+    }
+
+    setIsLoading(false);
+  }, [createFirstPage]);
+
+  const savePageToSupabase = useCallback(
+    async (pageId: string, content: JSONContent) => {
+      const { error } = await supabase
+        .from("pages")
+        .update({
+          content_json: content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", pageId);
+
+      if (error) {
+        console.error("Error saving page:", error.message);
+      }
+    },
     [],
   );
 
@@ -100,12 +179,15 @@ export function NoteEditor() {
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class:
-          "noted-editor min-h-[68vh] focus:outline-none px-12 py-8",
+        class: "noted-editor min-h-[68vh] focus:outline-none px-12 py-8",
       },
     },
     onCreate: ({ editor: createdEditor }) => {
-      createdEditor.commands.setContent(activePage.content, { emitUpdate: false });
+      if (activePage?.content) {
+        createdEditor.commands.setContent(activePage.content, {
+          emitUpdate: false,
+        });
+      }
     },
     onUpdate: ({ editor: updatedEditor }) => {
       if (skipSaveForHydrationRef.current) {
@@ -113,26 +195,32 @@ export function NoteEditor() {
         return;
       }
 
+      if (!activePageId) return;
+
       if (saveTimeoutRef.current) {
         window.clearTimeout(saveTimeoutRef.current);
       }
 
-      saveTimeoutRef.current = window.setTimeout(() => {
-        const html = updatedEditor.getHTML();
+      saveTimeoutRef.current = window.setTimeout(async () => {
+        const json = updatedEditor.getJSON();
+
         setPages((prevPages) =>
           prevPages.map((page) =>
-            page.id === activePageId ? { ...page, content: html } : page,
+            page.id === activePageId ? { ...page, content: json } : page,
           ),
         );
-      }, 250);
+
+        await savePageToSupabase(activePageId, json);
+      }, 500);
     },
   });
 
   useEffect(() => {
-    if (!editor) {
-      return;
-    }
+    loadPages();
+  }, [loadPages]);
 
+  useEffect(() => {
+    if (!editor) return;
     editor.setEditable(isEditMode);
   }, [editor, isEditMode]);
 
@@ -145,29 +233,41 @@ export function NoteEditor() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        activePageId,
-        pages,
-      }),
-    );
-  }, [activePageId, pages]);
+    if (!editor || !activePage) return;
 
-  useEffect(() => {
-    if (!editor || !activePage) {
+    skipSaveForHydrationRef.current = true;
+    editor.commands.setContent(activePage.content || DEFAULT_NOTE, {
+      emitUpdate: false,
+    });
+  }, [activePage, editor]);
+
+  const createNewPage = useCallback(async () => {
+    const nextPageNumber = pages.length + 1;
+    const newPageId = crypto.randomUUID();
+
+    const { data, error } = await supabase
+      .from("pages")
+      .insert([
+        {
+          id: newPageId,
+          title: `Page ${nextPageNumber}`,
+          page_number: nextPageNumber,
+          content_json: DEFAULT_NOTE,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating page:", error.message);
       return;
     }
 
-    skipSaveForHydrationRef.current = true;
-    editor.commands.setContent(activePage.content, { emitUpdate: false });
-  }, [activePage, editor]);
-
-  const createNewPage = useCallback(() => {
     const newPage: NotePage = {
-      id: crypto.randomUUID(),
-      title: `Page ${pages.length + 1}`,
-      content: DEFAULT_NOTE,
+      id: data.id,
+      title: data.title,
+      pageNumber: data.page_number,
+      content: data.content_json,
     };
 
     setPages((prev) => [...prev, newPage]);
@@ -175,53 +275,73 @@ export function NoteEditor() {
     setIsEditMode(true);
   }, [pages.length]);
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!isEditMode || !editorWrapRef.current) {
-        return;
-      }
 
-      const blockEl = (event.target as HTMLElement).closest(
-        ".ProseMirror > p, .ProseMirror > h1, .ProseMirror > h2, .ProseMirror > ul",
-      ) as HTMLElement | null;
-
-      if (!blockEl) {
-        if (!menuOpen) {
-          setPlusAnchor((prev) => ({ ...prev, visible: false }));
-        }
-        return;
-      }
-
-      const blockRect = blockEl.getBoundingClientRect();
-      const wrapRect = editorWrapRef.current.getBoundingClientRect();
-
-      setPlusAnchor({
-        top: blockRect.top - wrapRect.top + 2,
-        visible: true,
-      });
-    },
-    [isEditMode, menuOpen],
-  );
 
   const insertBlockFromMenu = useCallback(
     (type: "heading" | "paragraph" | "bulletList") => {
-      if (!editor) {
-        return;
-      }
+      if (!editor) return;
 
       const actions = {
-        heading: () => editor.chain().focus().setHeading({ level: 1 }).run(),
-        paragraph: () => editor.chain().focus().setParagraph().run(),
-        bulletList: () => editor.chain().focus().toggleBulletList().run(),
+        heading: () =>
+          editor
+            .chain()
+            .focus()
+            .insertContent([
+              {
+                type: "heading",
+                attrs: { level: 1 },
+                content: [{ type: "text", text: "Heading" }],
+              },
+              { type: "paragraph" },
+            ])
+            .run(),
+        paragraph: () =>
+          editor
+            .chain()
+            .focus()
+            .insertContent([
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Write something..." }],
+              },
+            ])
+            .run(),
+        bulletList: () =>
+          editor
+            .chain()
+            .focus()
+            .insertContent([
+              {
+                type: "bulletList",
+                content: [
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "List item" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              { type: "paragraph" },
+            ])
+            .run(),
       };
 
       actions[type]();
+      setMenuOpen(false);
     },
     [editor],
   );
 
-  if (!editor) {
-    return null;
+  if (isLoading || !editor) {
+    return (
+      <div className="mx-auto flex w-full max-w-4xl flex-1 items-center justify-center px-4 py-8 text-sm text-zinc-500 md:px-8">
+        Loading pages...
+      </div>
+    );
   }
 
   return (
@@ -239,10 +359,11 @@ export function NoteEditor() {
           >
             {pages.map((page) => (
               <option key={page.id} value={page.id}>
-                {page.title}
+                {page.pageNumber}. {page.title}
               </option>
             ))}
           </select>
+
           <button
             type="button"
             onClick={createNewPage}
@@ -250,12 +371,10 @@ export function NoteEditor() {
           >
             New page
           </button>
+
           <button
             type="button"
-            onClick={() => {
-              setIsEditMode((prev) => !prev);
-              setMenuOpen(false);
-            }}
+            onClick={() => setIsEditMode((prev) => !prev)}
             className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white transition-colors hover:bg-zinc-700"
           >
             {isEditMode ? "Done" : "Edit"}
@@ -274,53 +393,108 @@ export function NoteEditor() {
         >
           <EditorToolbar
             canBold={editor.can().chain().focus().toggleBold().run()}
-            canToggleHeading={
-              editor.can().chain().focus().toggleHeading({ level: 1 }).run()
-            }
-            canToggleBulletList={editor.can().chain().focus().toggleBulletList().run()}
+            canItalic={editor.can().chain().focus().toggleItalic().run()}
+            canUnderline={editor.can().chain().focus().toggleUnderline().run()}
+            canStrike={editor.can().chain().focus().toggleStrike().run()}
+            canHeading1={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleHeading({ level: 1 })
+              .run()}
+            canHeading2={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleHeading({ level: 2 })
+              .run()}
+            canHeading3={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleHeading({ level: 3 })
+              .run()}
+            canBulletList={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleBulletList()
+              .run()}
+            canOrderedList={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleOrderedList()
+              .run()}
+            canTaskList={editor.can().chain().focus().toggleTaskList().run()}
+            canBlockquote={editor
+              .can()
+              .chain()
+              .focus()
+              .toggleBlockquote()
+              .run()}
+            canCodeBlock={editor.can().chain().focus().toggleCodeBlock().run()}
+            canHorizontalRule={editor
+              .can()
+              .chain()
+              .focus()
+              .setHorizontalRule()
+              .run()}
+            canUndo={editor.can().undo()}
+            canRedo={editor.can().redo()}
             isBold={editor.isActive("bold")}
-            isHeading={editor.isActive("heading", { level: 1 })}
+            isItalic={editor.isActive("italic")}
+            isUnderline={editor.isActive("underline")}
+            isStrike={editor.isActive("strike")}
+            isHeading1={editor.isActive("heading", { level: 1 })}
+            isHeading2={editor.isActive("heading", { level: 2 })}
+            isHeading3={editor.isActive("heading", { level: 3 })}
             isBulletList={editor.isActive("bulletList")}
+            isOrderedList={editor.isActive("orderedList")}
+            isTaskList={editor.isActive("taskList")}
+            isBlockquote={editor.isActive("blockquote")}
+            isCodeBlock={editor.isActive("codeBlock")}
             onBold={() => editor.chain().focus().toggleBold().run()}
-            onHeading={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            onItalic={() => editor.chain().focus().toggleItalic().run()}
+            onUnderline={() => editor.chain().focus().toggleUnderline().run()}
+            onStrike={() => editor.chain().focus().toggleStrike().run()}
+            onHeading1={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
+            onHeading2={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+            onHeading3={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
             onBulletList={() => editor.chain().focus().toggleBulletList().run()}
+            onOrderedList={() =>
+              editor.chain().focus().toggleOrderedList().run()
+            }
+            onTaskList={() => editor.chain().focus().toggleTaskList().run()}
+            onBlockquote={() => editor.chain().focus().toggleBlockquote().run()}
+            onCodeBlock={() => editor.chain().focus().toggleCodeBlock().run()}
+            onHorizontalRule={() =>
+              editor.chain().focus().setHorizontalRule().run()
+            }
+            onUndo={() => editor.chain().focus().undo().run()}
+            onRedo={() => editor.chain().focus().redo().run()}
+            onTextColor={(color) =>
+              editor.chain().focus().setColor(color).run()
+            }
+            onHighlightColor={(color) =>
+              editor.chain().focus().toggleHighlight({ color }).run()
+            }
           />
         </div>
 
         <div
           ref={editorWrapRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => {
-            if (!menuOpen) {
-              setPlusAnchor((prev) => ({ ...prev, visible: false }));
-            }
-          }}
           className={[
             "relative rounded-2xl border border-transparent bg-white transition-all duration-200",
             isEditMode ? "border-zinc-200 shadow-sm" : "",
           ].join(" ")}
         >
-          {isEditMode && plusAnchor.visible && (
-            <div
-              style={{ top: plusAnchor.top }}
-              className="absolute left-3 z-30"
-            >
-              <button
-                type="button"
-                onClick={() => setMenuOpen((prev) => !prev)}
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-100"
-                aria-label="Insert block"
-              >
-                +
-              </button>
-              <BlockInsertMenu
-                open={menuOpen}
-                onClose={() => setMenuOpen(false)}
-                onInsert={insertBlockFromMenu}
-              />
-            </div>
-          )}
-
           <EditorContent editor={editor} />
         </div>
       </div>
