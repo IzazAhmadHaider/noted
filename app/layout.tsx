@@ -10,8 +10,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className="h-full overflow-hidden">
+      <body className="h-full overflow-hidden flex flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

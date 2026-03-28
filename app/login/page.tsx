@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
   const { signIn, signUp } = useAuth();
   const router = useRouter();
 
@@ -22,23 +23,31 @@ export default function LoginPage() {
       if (isSignUp) {
         await signUp(email, password);
         setError("");
-        setIsSignUp(false);
         setEmail("");
         setPassword("");
-        alert("Sign up successful! Please log in.");
+        setSignUpSuccess(true);
+        setIsSignUp(false);
       } else {
         await signIn(email, password);
         router.push("/");
       }
     } catch (err) {
-      setError((err as Error).message || "An error occurred");
+      const errorMessage = (err as Error).message || "An error occurred";
+      // Better error messages for common auth issues
+      if (errorMessage.includes("Invalid login credentials") || errorMessage.includes("no email found")) {
+        setError("Email not found or not confirmed. Please check your email for confirmation link.");
+      } else if (errorMessage.includes("Email not confirmed")) {
+        setError("Please confirm your email before logging in. Check your inbox for the confirmation link.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-3 sm:px-4">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-3 sm:px-4 overflow-hidden">
       {/* Decorative gradient orbs - hidden on mobile */}
       <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-purple-500 opacity-20 blur-3xl hidden sm:block" />
       <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-500 opacity-20 blur-3xl hidden sm:block" />
@@ -91,6 +100,17 @@ export default function LoginPage() {
                 />
               </div>
 
+              {/* Success Message - Email Confirmation */}
+              {signUpSuccess && !error && (
+                <div className="flex items-start gap-2 rounded-lg sm:rounded-xl bg-green-50 p-3 sm:p-4 text-xs sm:text-sm text-green-700 border border-green-200">
+                  <span className="mt-0.5">✓</span>
+                  <div>
+                    <p className="font-semibold">Account created successfully!</p>
+                    <p className="mt-1">A confirmation email has been sent to <strong>{email}</strong>. Please click the link in the email to confirm your account before logging in.</p>
+                  </div>
+                </div>
+              )}
+
               {/* Error Message */}
               {error && (
                 <div className="flex items-start gap-2 rounded-lg sm:rounded-xl bg-red-50 p-3 sm:p-4 text-xs sm:text-sm text-red-700 border border-red-200">
@@ -134,6 +154,7 @@ export default function LoginPage() {
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setError("");
+                    setSignUpSuccess(false);
                   }}
                   className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
                 >
@@ -145,9 +166,11 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-4 sm:mt-6 text-center text-xs text-slate-400">
-          Your notes, your privacy, always encrypted
-        </p>
+        {!signUpSuccess && (
+          <p className="mt-4 sm:mt-6 text-center text-xs text-slate-400">
+            Your notes, your privacy, always encrypted
+          </p>
+        )}
       </div>
     </div>
   );
