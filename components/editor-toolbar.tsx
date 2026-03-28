@@ -92,7 +92,7 @@ function ToolbarButton({
       disabled={isDisabled}
       title={label}
       className={`
-        inline-flex items-center justify-center rounded-lg p-2 transition-all duration-200
+        inline-flex items-center justify-center rounded-lg p-1.5 sm:p-2 transition-all duration-200 text-sm sm:text-base
         ${isActive ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md shadow-purple-500/25" : "text-slate-600 hover:bg-slate-100"}
         ${!isDisabled && !isActive ? "hover:text-slate-900" : ""}
         ${isDisabled ? "cursor-not-allowed opacity-40" : ""}
@@ -107,7 +107,7 @@ function ToolbarButton({
 }
 
 function Separator() {
-  return <div className="h-6 w-px bg-slate-300" />;
+  return <div className="h-4 sm:h-6 w-px bg-slate-300" />;
 }
 
 export function EditorToolbar({
@@ -156,12 +156,12 @@ export function EditorToolbar({
   onTextColor,
   onHighlightColor,
 }: EditorToolbarProps) {
-  const iconSize = 18;
+  const iconSize = 16;
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-3 shadow-sm">
+    <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-1 sm:gap-2 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-2 sm:p-3 shadow-sm">
       {/* Undo/Redo */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <ToolbarButton
           icon={<Undo2 size={iconSize} />}
           label="Undo"
@@ -181,7 +181,7 @@ export function EditorToolbar({
       <Separator />
 
       {/* Text Formatting */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <ToolbarButton
           icon={<Bold size={iconSize} />}
           label="Bold"
@@ -214,8 +214,8 @@ export function EditorToolbar({
 
       <Separator />
 
-      {/* Headings */}
-      <div className="flex items-center gap-1">
+      {/* Headings - Hide H3 on mobile */}
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <ToolbarButton
           icon={<Heading1 size={iconSize} />}
           label="Heading 1"
@@ -230,19 +230,21 @@ export function EditorToolbar({
           isDisabled={!canHeading2}
           onClick={onHeading2}
         />
-        <ToolbarButton
-          icon={<Heading3 size={iconSize} />}
-          label="Heading 3"
-          isActive={isHeading3}
-          isDisabled={!canHeading3}
-          onClick={onHeading3}
-        />
+        <span className="hidden sm:inline">
+          <ToolbarButton
+            icon={<Heading3 size={iconSize} />}
+            label="Heading 3"
+            isActive={isHeading3}
+            isDisabled={!canHeading3}
+            onClick={onHeading3}
+          />
+        </span>
       </div>
 
       <Separator />
 
       {/* Lists */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <ToolbarButton
           icon={<List size={iconSize} />}
           label="Bullet List"
@@ -268,8 +270,8 @@ export function EditorToolbar({
 
       <Separator />
 
-      {/* Blocks */}
-      <div className="flex items-center gap-1">
+      {/* Blocks - Hide Divider on mobile */}
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <ToolbarButton
           icon={<Quote size={iconSize} />}
           label="Blockquote"
@@ -284,38 +286,40 @@ export function EditorToolbar({
           isDisabled={!canCodeBlock}
           onClick={onCodeBlock}
         />
-        <ToolbarButton
-          icon={<Minus size={iconSize} />}
-          label="Divider"
-          isActive={false}
-          isDisabled={!canHorizontalRule}
-          onClick={onHorizontalRule}
-        />
+        <span className="hidden sm:inline">
+          <ToolbarButton
+            icon={<Minus size={iconSize} />}
+            label="Divider"
+            isActive={false}
+            isDisabled={!canHorizontalRule}
+            onClick={onHorizontalRule}
+          />
+        </span>
       </div>
 
       <Separator />
 
       {/* Colors */}
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-medium text-slate-600 px-1">🎨</span>
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <span className="hidden sm:inline text-xs font-medium text-slate-600 px-0.5 sm:px-1">🎨</span>
           <input
             type="color"
             defaultValue="#000000"
             onChange={(e) => onTextColor(e.target.value)}
             title="Text Color"
-            className="h-7 w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
+            className="h-6 sm:h-7 w-6 sm:w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-medium text-slate-600 px-1">✏️</span>
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <span className="hidden sm:inline text-xs font-medium text-slate-600 px-0.5 sm:px-1">✏️</span>
           <input
             type="color"
             defaultValue="#FFFF00"
             onChange={(e) => onHighlightColor(e.target.value)}
             title="Highlight Color"
-            className="h-7 w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
+            className="h-6 sm:h-7 w-6 sm:w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
           />
         </div>
       </div>
