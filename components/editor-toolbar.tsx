@@ -1,328 +1,384 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  CheckSquare,
-  Quote,
-  Code2,
-  Minus,
-  Undo2,
-  Redo2,
+  Bold, Italic, Underline, Strikethrough,
+  Heading1, Heading2, Heading3,
+  List, ListOrdered, CheckSquare,
+  Quote, Code2, Minus,
+  Undo2, Redo2,
+  Baseline, Highlighter,
 } from "lucide-react";
 
-type EditorToolbarProps = {
-  canBold: boolean;
-  canItalic: boolean;
-  canUnderline: boolean;
-  canStrike: boolean;
-  canHeading1: boolean;
-  canHeading2: boolean;
-  canHeading3: boolean;
-  canBulletList: boolean;
-  canOrderedList: boolean;
-  canTaskList: boolean;
-  canBlockquote: boolean;
-  canCodeBlock: boolean;
-  canHorizontalRule: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrike: boolean;
-  isHeading1: boolean;
-  isHeading2: boolean;
-  isHeading3: boolean;
-  isBulletList: boolean;
-  isOrderedList: boolean;
-  isTaskList: boolean;
-  isBlockquote: boolean;
-  isCodeBlock: boolean;
-  onBold: () => void;
-  onItalic: () => void;
-  onUnderline: () => void;
-  onStrike: () => void;
-  onHeading1: () => void;
-  onHeading2: () => void;
-  onHeading3: () => void;
-  onBulletList: () => void;
-  onOrderedList: () => void;
-  onTaskList: () => void;
-  onBlockquote: () => void;
-  onCodeBlock: () => void;
-  onHorizontalRule: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  onTextColor: (color: string) => void;
-  onHighlightColor: (color: string) => void;
-};
+/* ─────────────────────────────────────────────────────────
+   Styles
+───────────────────────────────────────────────────────── */
+const S = `
+  .tb {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 1px 0;
+    flex-wrap: nowrap;
+  }
+  .tb::-webkit-scrollbar { display: none; }
 
-interface ToolbarButton {
-  id: string;
-  icon: React.ReactNode;
-  label: string;
-  group: "text" | "headings" | "lists" | "blocks" | "history";
-}
+  .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+  }
 
-function ToolbarButton({
-  icon,
-  label,
-  isActive,
-  isDisabled,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  isDisabled: boolean;
-  onClick: () => void;
+  /* Divider */
+  .tb-div {
+    width: 1px;
+    height: 16px;
+    background: #2a2a26;
+    margin: 0 6px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+
+  /* Button */
+  .tb-b {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #4a4a46;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.11s ease, color 0.11s ease, transform 0.09s ease;
+    outline: none;
+  }
+  .tb-b:hover:not(:disabled) {
+    background: #1e1e1b;
+    color: #e8e6e0;
+    transform: scale(1.07);
+  }
+  .tb-b:active:not(:disabled) { transform: scale(0.91); }
+  .tb-b.on {
+    background: rgba(200,185,122,0.14);
+    color: #c8b97a;
+  }
+  .tb-b.on:hover {
+    background: rgba(200,185,122,0.22);
+    color: #c8b97a;
+  }
+  .tb-b:disabled {
+    opacity: 0.22;
+    cursor: default;
+    pointer-events: none;
+  }
+  .tb-b:focus-visible {
+    box-shadow: 0 0 0 2px rgba(200,185,122,0.5);
+  }
+
+  /* Tooltip */
+  .tb-b::after, .tb-cs::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    opacity: 0;
+    pointer-events: none;
+    background: #1e1e1b;
+    border: 1px solid #333330;
+    color: #8a8880;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 5px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    z-index: 999;
+  }
+  .tb-b:hover::after, .tb-cs:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Color swatch button */
+  .tb-cs {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #4a4a46;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.11s ease, color 0.11s ease, transform 0.09s ease;
+    outline: none;
+  }
+  .tb-cs:hover {
+    background: #1e1e1b;
+    color: #e8e6e0;
+    transform: scale(1.07);
+  }
+  .tb-cs:active { transform: scale(0.91); }
+  .tb-cs:focus-visible { box-shadow: 0 0 0 2px rgba(200,185,122,0.5); }
+
+  .tb-cs-bar {
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+    transition: background 0.18s ease;
+    flex-shrink: 0;
+  }
+
+  /* Dropdown panel */
+  .tb-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #161614;
+    border: 1px solid #2a2a26;
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 500;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+    min-width: 170px;
+    animation: tb-pop 0.14s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes tb-pop {
+    from { opacity: 0; transform: translateX(-50%) scale(0.94) translateY(-4px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1)    translateY(0); }
+  }
+  .tb-panel-label {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #4a4a46;
+    margin-bottom: 9px;
+    padding: 0 1px;
+  }
+  .tb-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 18px);
+    gap: 4px;
+  }
+  .tb-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.04);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    flex-shrink: 0;
+  }
+  .tb-dot:hover { transform: scale(1.22); }
+  .tb-dot.sel { box-shadow: 0 0 0 2px #c8b97a; }
+`;
+
+const TEXT_COLORS = [
+  "#e8e6e0","#c8b97a","#7dd3c8","#7db8f7",
+  "#c77dda","#f47a7a","#f7a96b","#6bcb77",
+  "#a0c4ff","#caffbf","#ffd6a5","#ffc6ff",
+  "#8a8880","#5a5a56","#ffffff","#000000",
+];
+const HIGHLIGHT_COLORS = [
+  "rgba(200,185,122,0.3)","rgba(125,211,200,0.3)","rgba(125,184,247,0.3)","rgba(199,125,218,0.3)",
+  "rgba(244,122,122,0.3)","rgba(247,169,107,0.3)","rgba(107,203,119,0.3)","rgba(160,196,255,0.3)",
+  "#c8b97a","#7dd3c8","#7db8f7","#c77dda",
+  "#f47a7a","#f7a96b","#6bcb77","#a0c4ff",
+];
+
+/* ─────────────────────────────────────────────────────────
+   Sub-components
+───────────────────────────────────────────────────────── */
+function Btn({ icon, tip, on = false, off = false, onClick }: {
+  icon: React.ReactNode; tip: string;
+  on?: boolean; off?: boolean; onClick: () => void;
 }) {
   return (
     <button
       type="button"
+      className={`tb-b${on ? " on" : ""}`}
+      data-tip={tip}
+      disabled={off}
       onClick={onClick}
-      disabled={isDisabled}
-      title={label}
-      className={`
-        inline-flex items-center justify-center rounded-lg p-1.5 sm:p-2 transition-all duration-200 text-sm sm:text-base
-        ${isActive ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md shadow-purple-500/25" : "text-slate-600 hover:bg-slate-100"}
-        ${!isDisabled && !isActive ? "hover:text-slate-900" : ""}
-        ${isDisabled ? "cursor-not-allowed opacity-40" : ""}
-        focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1
-      `}
-      aria-label={label}
-      aria-pressed={isActive}
+      aria-label={tip}
+      aria-pressed={on}
     >
       {icon}
     </button>
   );
 }
 
-function Separator() {
-  return <div className="h-4 sm:h-6 w-px bg-slate-300" />;
-}
+function Div() { return <div className="tb-div" aria-hidden />; }
 
-export function EditorToolbar({
-  canBold,
-  canItalic,
-  canUnderline,
-  canStrike,
-  canHeading1,
-  canHeading2,
-  canHeading3,
-  canBulletList,
-  canOrderedList,
-  canTaskList,
-  canBlockquote,
-  canCodeBlock,
-  canHorizontalRule,
-  canUndo,
-  canRedo,
-  isBold,
-  isItalic,
-  isUnderline,
-  isStrike,
-  isHeading1,
-  isHeading2,
-  isHeading3,
-  isBulletList,
-  isOrderedList,
-  isTaskList,
-  isBlockquote,
-  isCodeBlock,
-  onBold,
-  onItalic,
-  onUnderline,
-  onStrike,
-  onHeading1,
-  onHeading2,
-  onHeading3,
-  onBulletList,
-  onOrderedList,
-  onTaskList,
-  onBlockquote,
-  onCodeBlock,
-  onHorizontalRule,
-  onUndo,
-  onRedo,
-  onTextColor,
-  onHighlightColor,
-}: EditorToolbarProps) {
-  const iconSize = 16;
+function ColorBtn({ icon, tip, label, colors, active, bar, onChange }: {
+  icon: React.ReactNode; tip: string; label: string;
+  colors: string[]; active: string; bar: string;
+  onChange: (c: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const fn = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, [open]);
 
   return (
-    <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-1 sm:gap-2 rounded-xl sm:rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-2 sm:p-3 shadow-sm">
-      {/* Undo/Redo */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <ToolbarButton
-          icon={<Undo2 size={iconSize} />}
-          label="Undo"
-          isActive={false}
-          isDisabled={!canUndo}
-          onClick={onUndo}
-        />
-        <ToolbarButton
-          icon={<Redo2 size={iconSize} />}
-          label="Redo"
-          isActive={false}
-          isDisabled={!canRedo}
-          onClick={onRedo}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Text Formatting */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <ToolbarButton
-          icon={<Bold size={iconSize} />}
-          label="Bold"
-          isActive={isBold}
-          isDisabled={!canBold}
-          onClick={onBold}
-        />
-        <ToolbarButton
-          icon={<Italic size={iconSize} />}
-          label="Italic"
-          isActive={isItalic}
-          isDisabled={!canItalic}
-          onClick={onItalic}
-        />
-        <ToolbarButton
-          icon={<Underline size={iconSize} />}
-          label="Underline"
-          isActive={isUnderline}
-          isDisabled={!canUnderline}
-          onClick={onUnderline}
-        />
-        <ToolbarButton
-          icon={<Strikethrough size={iconSize} />}
-          label="Strikethrough"
-          isActive={isStrike}
-          isDisabled={!canStrike}
-          onClick={onStrike}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Headings - Hide H3 on mobile */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <ToolbarButton
-          icon={<Heading1 size={iconSize} />}
-          label="Heading 1"
-          isActive={isHeading1}
-          isDisabled={!canHeading1}
-          onClick={onHeading1}
-        />
-        <ToolbarButton
-          icon={<Heading2 size={iconSize} />}
-          label="Heading 2"
-          isActive={isHeading2}
-          isDisabled={!canHeading2}
-          onClick={onHeading2}
-        />
-        <span className="hidden sm:inline">
-          <ToolbarButton
-            icon={<Heading3 size={iconSize} />}
-            label="Heading 3"
-            isActive={isHeading3}
-            isDisabled={!canHeading3}
-            onClick={onHeading3}
-          />
-        </span>
-      </div>
-
-      <Separator />
-
-      {/* Lists */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <ToolbarButton
-          icon={<List size={iconSize} />}
-          label="Bullet List"
-          isActive={isBulletList}
-          isDisabled={!canBulletList}
-          onClick={onBulletList}
-        />
-        <ToolbarButton
-          icon={<ListOrdered size={iconSize} />}
-          label="Ordered List"
-          isActive={isOrderedList}
-          isDisabled={!canOrderedList}
-          onClick={onOrderedList}
-        />
-        <ToolbarButton
-          icon={<CheckSquare size={iconSize} />}
-          label="Task List"
-          isActive={isTaskList}
-          isDisabled={!canTaskList}
-          onClick={onTaskList}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Blocks - Hide Divider on mobile */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <ToolbarButton
-          icon={<Quote size={iconSize} />}
-          label="Blockquote"
-          isActive={isBlockquote}
-          isDisabled={!canBlockquote}
-          onClick={onBlockquote}
-        />
-        <ToolbarButton
-          icon={<Code2 size={iconSize} />}
-          label="Code Block"
-          isActive={isCodeBlock}
-          isDisabled={!canCodeBlock}
-          onClick={onCodeBlock}
-        />
-        <span className="hidden sm:inline">
-          <ToolbarButton
-            icon={<Minus size={iconSize} />}
-            label="Divider"
-            isActive={false}
-            isDisabled={!canHorizontalRule}
-            onClick={onHorizontalRule}
-          />
-        </span>
-      </div>
-
-      <Separator />
-
-      {/* Colors */}
-      <div className="flex items-center gap-1 sm:gap-2">
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          <span className="hidden sm:inline text-xs font-medium text-slate-600 px-0.5 sm:px-1">🎨</span>
-          <input
-            type="color"
-            defaultValue="#000000"
-            onChange={(e) => onTextColor(e.target.value)}
-            title="Text Color"
-            className="h-6 sm:h-7 w-6 sm:w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
-          />
+    <div style={{ position: "relative", flexShrink: 0 }} ref={ref}>
+      <button
+        type="button"
+        className="tb-cs"
+        data-tip={tip}
+        onClick={() => setOpen(v => !v)}
+        aria-label={tip}
+        aria-expanded={open}
+      >
+        {icon}
+        <div className="tb-cs-bar" style={{ background: bar }} />
+      </button>
+      {open && (
+        <div className="tb-panel" role="dialog" aria-label={label}>
+          <div className="tb-panel-label">{label}</div>
+          <div className="tb-grid">
+            {colors.map(c => (
+              <div
+                key={c}
+                className={`tb-dot${active === c ? " sel" : ""}`}
+                style={{ background: c }}
+                title={c}
+                role="button"
+                tabIndex={0}
+                onClick={() => { onChange(c); setOpen(false); }}
+                onKeyDown={e => { if (e.key === "Enter") { onChange(c); setOpen(false); } }}
+              />
+            ))}
+          </div>
         </div>
-
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          <span className="hidden sm:inline text-xs font-medium text-slate-600 px-0.5 sm:px-1">✏️</span>
-          <input
-            type="color"
-            defaultValue="#FFFF00"
-            onChange={(e) => onHighlightColor(e.target.value)}
-            title="Highlight Color"
-            className="h-6 sm:h-7 w-6 sm:w-7 cursor-pointer rounded-lg border border-slate-200 p-0.5 hover:border-slate-400 transition-colors"
-          />
-        </div>
-      </div>
+      )}
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Types
+───────────────────────────────────────────────────────── */
+type EditorToolbarProps = {
+  canBold: boolean; canItalic: boolean; canUnderline: boolean; canStrike: boolean;
+  canHeading1: boolean; canHeading2: boolean; canHeading3: boolean;
+  canBulletList: boolean; canOrderedList: boolean; canTaskList: boolean;
+  canBlockquote: boolean; canCodeBlock: boolean; canHorizontalRule: boolean;
+  canUndo: boolean; canRedo: boolean;
+  isBold: boolean; isItalic: boolean; isUnderline: boolean; isStrike: boolean;
+  isHeading1: boolean; isHeading2: boolean; isHeading3: boolean;
+  isBulletList: boolean; isOrderedList: boolean; isTaskList: boolean;
+  isBlockquote: boolean; isCodeBlock: boolean;
+  onBold: () => void; onItalic: () => void; onUnderline: () => void; onStrike: () => void;
+  onHeading1: () => void; onHeading2: () => void; onHeading3: () => void;
+  onBulletList: () => void; onOrderedList: () => void; onTaskList: () => void;
+  onBlockquote: () => void; onCodeBlock: () => void; onHorizontalRule: () => void;
+  onUndo: () => void; onRedo: () => void;
+  onTextColor: (color: string) => void;
+  onHighlightColor: (color: string) => void;
+};
+
+/* ─────────────────────────────────────────────────────────
+   EditorToolbar
+───────────────────────────────────────────────────────── */
+export function EditorToolbar(p: EditorToolbarProps) {
+  const sz = 14;
+  const [textColor,    setTextColor]    = useState(TEXT_COLORS[0]);
+  const [hlColor,      setHlColor]      = useState(HIGHLIGHT_COLORS[0]);
+
+  return (
+    <>
+      <style>{S}</style>
+      <div className="tb" role="toolbar" aria-label="Formatting">
+
+        {/* History */}
+        <div className="tb-group">
+          <Btn icon={<Undo2 size={sz}/>}  tip="Undo" off={!p.canUndo} onClick={p.onUndo}/>
+          <Btn icon={<Redo2 size={sz}/>}  tip="Redo" off={!p.canRedo} onClick={p.onRedo}/>
+        </div>
+
+        <Div/>
+
+        {/* Headings */}
+        <div className="tb-group">
+          <Btn icon={<Heading1 size={sz}/>} tip="Heading 1" on={p.isHeading1} off={!p.canHeading1} onClick={p.onHeading1}/>
+          <Btn icon={<Heading2 size={sz}/>} tip="Heading 2" on={p.isHeading2} off={!p.canHeading2} onClick={p.onHeading2}/>
+          <Btn icon={<Heading3 size={sz}/>} tip="Heading 3" on={p.isHeading3} off={!p.canHeading3} onClick={p.onHeading3}/>
+        </div>
+
+        <Div/>
+
+        {/* Inline marks */}
+        <div className="tb-group">
+          <Btn icon={<Bold         size={sz}/>} tip="Bold"          on={p.isBold}      off={!p.canBold}      onClick={p.onBold}/>
+          <Btn icon={<Italic       size={sz}/>} tip="Italic"        on={p.isItalic}    off={!p.canItalic}    onClick={p.onItalic}/>
+          <Btn icon={<Underline    size={sz}/>} tip="Underline"     on={p.isUnderline} off={!p.canUnderline} onClick={p.onUnderline}/>
+          <Btn icon={<Strikethrough size={sz}/>} tip="Strikethrough" on={p.isStrike}   off={!p.canStrike}    onClick={p.onStrike}/>
+        </div>
+
+        <Div/>
+
+        {/* Color */}
+        <div className="tb-group">
+          <ColorBtn
+            icon={<Baseline size={sz}/>}
+            tip="Text color" label="Text color"
+            colors={TEXT_COLORS} active={textColor} bar={textColor}
+            onChange={c => { setTextColor(c); p.onTextColor(c); }}
+          />
+          <ColorBtn
+            icon={<Highlighter size={sz}/>}
+            tip="Highlight" label="Highlight"
+            colors={HIGHLIGHT_COLORS} active={hlColor} bar={hlColor}
+            onChange={c => { setHlColor(c); p.onHighlightColor(c); }}
+          />
+        </div>
+
+        <Div/>
+
+        {/* Lists */}
+        <div className="tb-group">
+          <Btn icon={<List         size={sz}/>} tip="Bullet list"   on={p.isBulletList}  off={!p.canBulletList}  onClick={p.onBulletList}/>
+          <Btn icon={<ListOrdered  size={sz}/>} tip="Numbered list" on={p.isOrderedList} off={!p.canOrderedList} onClick={p.onOrderedList}/>
+          <Btn icon={<CheckSquare  size={sz}/>} tip="Task list"     on={p.isTaskList}    off={!p.canTaskList}    onClick={p.onTaskList}/>
+        </div>
+
+        <Div/>
+
+        {/* Blocks */}
+        <div className="tb-group">
+          <Btn icon={<Quote  size={sz}/>} tip="Blockquote" on={p.isBlockquote} off={!p.canBlockquote} onClick={p.onBlockquote}/>
+          <Btn icon={<Code2  size={sz}/>} tip="Code block" on={p.isCodeBlock}  off={!p.canCodeBlock}  onClick={p.onCodeBlock}/>
+          <Btn icon={<Minus  size={sz}/>} tip="Divider"                        off={!p.canHorizontalRule} onClick={p.onHorizontalRule}/>
+        </div>
+
+      </div>
+    </>
   );
 }
