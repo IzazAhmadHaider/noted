@@ -18,7 +18,7 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-.noted-editor {
+.notivo-editor {
   line-height: 1.75;
   font-size: 1rem;
   color: #0f172a;
@@ -28,24 +28,24 @@ body {
 }
 
 @media (min-width: 640px) {
-  .noted-editor {
+  .notivo-editor {
     padding: 2rem 2.5rem;
     font-size: 1.05rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .noted-editor {
+  .notivo-editor {
     padding: 2.5rem 3rem;
     font-size: 1.1rem;
   }
 }
 
-.noted-editor > * + * {
+.notivo-editor > * + * {
   margin-top: 1.2rem;
 }
 
-.noted-editor h1 {
+.notivo-editor h1 {
   font-size: 1.75rem;
   line-height: 1.2;
   font-weight: 700;
@@ -55,18 +55,18 @@ body {
 }
 
 @media (min-width: 640px) {
-  .noted-editor h1 {
+  .notivo-editor h1 {
     font-size: 2rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .noted-editor h1 {
+  .notivo-editor h1 {
     font-size: 2.25rem;
   }
 }
 
-.noted-editor h2 {
+.notivo-editor h2 {
   font-size: 1.4rem;
   line-height: 1.3;
   font-weight: 700;
@@ -76,18 +76,18 @@ body {
 }
 
 @media (min-width: 640px) {
-  .noted-editor h2 {
+  .notivo-editor h2 {
     font-size: 1.6rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .noted-editor h2 {
+  .notivo-editor h2 {
     font-size: 1.75rem;
   }
 }
 
-.noted-editor h3 {
+.notivo-editor h3 {
   font-size: 1.1rem;
   line-height: 1.35;
   font-weight: 600;
@@ -96,40 +96,40 @@ body {
 }
 
 @media (min-width: 640px) {
-  .noted-editor h3 {
+  .notivo-editor h3 {
     font-size: 1.25rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .noted-editor h3 {
+  .notivo-editor h3 {
     font-size: 1.35rem;
   }
 }
 
-.noted-editor p {
+.notivo-editor p {
   word-spacing: 0.05em;
 }
 
-.noted-editor ul,
-.noted-editor ol {
+.notivo-editor ul,
+.notivo-editor ol {
   padding-left: 1.75rem;
 }
 
-.noted-editor ul {
+.notivo-editor ul {
   list-style: disc;
 }
 
-.noted-editor ul li::marker {
+.notivo-editor ul li::marker {
   color: #7c3aed;
 }
 
-.noted-editor ol li::marker {
+.notivo-editor ol li::marker {
   color: #7c3aed;
   font-weight: 600;
 }
 
-.noted-editor blockquote {
+.notivo-editor blockquote {
   border-left: 4px solid #7c3aed;
   padding-left: 1.5rem;
   color: #475569;
@@ -137,7 +137,7 @@ body {
   margin-left: 0;
 }
 
-.noted-editor code {
+.notivo-editor code {
   background-color: #f1f5f9;
   border-radius: 0.4rem;
   padding: 0.25rem 0.5rem;
@@ -146,7 +146,7 @@ body {
   font-family: 'Monaco', 'Courier New', monospace;
 }
 
-.noted-editor pre {
+.notivo-editor pre {
   background-color: #1e293b;
   color: #e2e8f0;
   padding: 1.5rem;
@@ -157,14 +157,14 @@ body {
   margin: 1rem 0;
 }
 
-.noted-editor pre code {
+.notivo-editor pre code {
   background-color: transparent;
   color: #e2e8f0;
   padding: 0;
   border-radius: 0;
 }
 
-.noted-editor a {
+.notivo-editor a {
   color: #7c3aed;
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
@@ -172,39 +172,39 @@ body {
   transition: all 0.2s ease;
 }
 
-.noted-editor a:hover {
+.notivo-editor a:hover {
   color: #6d28d9;
 }
 
-.noted-editor strong {
+.notivo-editor strong {
   font-weight: 700;
   color: #0f172a;
 }
 
-.noted-editor em {
+.notivo-editor em {
   font-style: italic;
   color: #334155;
 }
 
-.noted-editor mark {
+.notivo-editor mark {
   background-color: #fde047;
   padding: 2px 4px;
   border-radius: 2px;
 }
 
 /* Task list styling */
-.noted-editor ul[data-type="taskList"] {
+.notivo-editor ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
 }
 
-.noted-editor ul[data-type="taskList"] li {
+.notivo-editor ul[data-type="taskList"] li {
   display: flex;
   align-items: center;
   margin: 0.5rem 0;
 }
 
-.noted-editor ul[data-type="taskList"] input[type="checkbox"] {
+.notivo-editor ul[data-type="taskList"] input[type="checkbox"] {
   width: 1.25rem;
   height: 1.25rem;
   margin-right: 0.75rem;
@@ -212,7 +212,7 @@ body {
   accent-color: #7c3aed;
 }
 
-.noted-editor p.is-editor-empty:first-child::before {
+.notivo-editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: #cbd5e1;

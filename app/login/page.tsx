@@ -61,7 +61,7 @@ export default function LoginPage() {
               <div className="mb-3 sm:mb-4 inline-flex h-12 sm:h-14 w-12 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600">
                 <span className="text-lg sm:text-xl font-bold text-white">✎</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Noted</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Notivo</h1>
               <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-slate-600">
                 {isSignUp
                   ? "Create your account and start writing"
@@ -148,7 +148,7 @@ export default function LoginPage() {
             {/* Toggle Sign In / Sign Up */}
             <div className="text-center">
               <p className="text-xs sm:text-sm text-slate-600">
-                {isSignUp ? "Already have an account? " : "New to Noted? "}
+                {isSignUp ? "Already have an account? " : "New to Notivo? "}
                 <button
                   type="button"
                   onClick={() => {

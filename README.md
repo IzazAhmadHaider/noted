@@ -1,4 +1,4 @@
-## Noted
+## Notivo
 
 Minimal single-page note-taking app built with Next.js, React, TipTap, and Tailwind CSS.
 
@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Notes
 
 - Editor content is saved automatically in your browser using `localStorage`.
-- Storage key: `noted.document.v1`.
+- Storage key: `notivo.document.v1`.
 
 ## Project Structure
 

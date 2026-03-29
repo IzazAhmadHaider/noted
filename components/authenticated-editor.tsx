@@ -47,7 +47,7 @@ export function AuthenticatedEditor() {
               </svg>
             </div>
             <div className="ae-brand-text">
-              <span className="ae-brand-name">noted</span>
+              <span className="ae-brand-name">Notivo</span>
               <span className="ae-brand-sub">your private space</span>
             </div>
           </div>
