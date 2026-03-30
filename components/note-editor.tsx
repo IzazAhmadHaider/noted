@@ -138,7 +138,7 @@ export function NoteEditor({ userId }: { userId: string }) {
 
   const saveTimeoutRef = useRef<number | null>(null);
   const skipSaveRef = useRef(true);
-  const editorScrollRef = useRef<HTMLDivElement>(null);
+  const editorScrollRef = useRef<HTMLDivElement | null>(null);
 
   /* ── Derived ── */
   const activePage = useMemo(
@@ -249,7 +249,7 @@ export function NoteEditor({ userId }: { userId: string }) {
   useEffect(() => { if (!isEditMode) setSelToolbar(null); }, [isEditMode]);
 
   /* ── Sticky notes ── */
-  const sticky = useStickyNotes(editor, activePageId, userId, editorScrollRef);
+  const sticky = useStickyNotes(editor, activePageId, userId, editorScrollRef as React.RefObject<HTMLDivElement>);
 
   /* ── Page actions ── */
   const createNewPage = useCallback(async () => {
