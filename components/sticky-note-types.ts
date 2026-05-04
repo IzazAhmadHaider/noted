@@ -12,9 +12,9 @@ export type StickyNote = {
 export type StickyColor = "yellow" | "pink" | "green" | "blue" | "purple";
 
 export const STICKY_COLORS: Record<StickyColor, { bg: string; border: string; dot: string; text: string; highlight: string }> = {
-  yellow: { bg: "#fefce8", border: "#fde047", dot: "#eab308", text: "#713f12", highlight: "rgba(250,204,21,0.35)" },
-  pink:   { bg: "#fdf2f8", border: "#f0abfc", dot: "#d946ef", text: "#701a75", highlight: "rgba(217,70,239,0.2)"  },
-  green:  { bg: "#f0fdf4", border: "#86efac", dot: "#22c55e", text: "#14532d", highlight: "rgba(34,197,94,0.2)"  },
-  blue:   { bg: "#eff6ff", border: "#93c5fd", dot: "#3b82f6", text: "#1e3a5f", highlight: "rgba(59,130,246,0.2)" },
-  purple: { bg: "#faf5ff", border: "#c4b5fd", dot: "#8b5cf6", text: "#3b0764", highlight: "rgba(139,92,246,0.2)" },
+  yellow: { bg: "#fff7c2", border: "#d59e00", dot: "#a86f00", text: "#4a3100", highlight: "rgba(213,158,0,0.28)" },
+  pink:   { bg: "#ffe4f1", border: "#c02672", dot: "#a21a5d", text: "#5f1239", highlight: "rgba(192,38,114,0.18)" },
+  green:  { bg: "#daf8e2", border: "#168747", dot: "#087336", text: "#073f20", highlight: "rgba(22,135,71,0.18)" },
+  blue:   { bg: "#dceeff", border: "#1d6fc2", dot: "#155ea8", text: "#12395f", highlight: "rgba(29,111,194,0.18)" },
+  purple: { bg: "#f0e4ff", border: "#7951c8", dot: "#6138b0", text: "#32136e", highlight: "rgba(121,81,200,0.18)" },
 };

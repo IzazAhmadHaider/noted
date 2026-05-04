@@ -36,7 +36,7 @@ const S = `
   .tb-div {
     width: 1px;
     height: 16px;
-    background: #2a2a26;
+    background: var(--border);
     margin: 0 6px;
     border-radius: 1px;
     flex-shrink: 0;
@@ -53,7 +53,7 @@ const S = `
     border-radius: 7px;
     border: none;
     background: transparent;
-    color: #4a4a46;
+    color: var(--text-faint);
     cursor: pointer;
     flex-shrink: 0;
     padding: 0;
@@ -61,18 +61,18 @@ const S = `
     outline: none;
   }
   .tb-b:hover:not(:disabled) {
-    background: #1e1e1b;
-    color: #e8e6e0;
+    background: var(--surface-2);
+    color: var(--text);
     transform: scale(1.07);
   }
   .tb-b:active:not(:disabled) { transform: scale(0.91); }
   .tb-b.on {
-    background: rgba(200,185,122,0.14);
-    color: #c8b97a;
+    background: var(--accent-soft);
+    color: var(--accent);
   }
   .tb-b.on:hover {
-    background: rgba(200,185,122,0.22);
-    color: #c8b97a;
+    background: var(--accent-soft);
+    color: var(--accent-hover);
   }
   .tb-b:disabled {
     opacity: 0.22;
@@ -80,7 +80,7 @@ const S = `
     pointer-events: none;
   }
   .tb-b:focus-visible {
-    box-shadow: 0 0 0 2px rgba(200,185,122,0.5);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent);
   }
 
   /* Tooltip */
@@ -92,9 +92,9 @@ const S = `
     transform: translateX(-50%) translateY(4px);
     opacity: 0;
     pointer-events: none;
-    background: #1e1e1b;
-    border: 1px solid #333330;
-    color: #8a8880;
+    background: var(--surface-2);
+    border: 1px solid var(--border2);
+    color: var(--text-soft);
     font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: 10px;
     letter-spacing: 0.05em;
@@ -123,7 +123,7 @@ const S = `
     border-radius: 7px;
     border: none;
     background: transparent;
-    color: #4a4a46;
+    color: var(--text-faint);
     cursor: pointer;
     flex-shrink: 0;
     padding: 0;
@@ -131,12 +131,12 @@ const S = `
     outline: none;
   }
   .tb-cs:hover {
-    background: #1e1e1b;
-    color: #e8e6e0;
+    background: var(--surface-2);
+    color: var(--text);
     transform: scale(1.07);
   }
   .tb-cs:active { transform: scale(0.91); }
-  .tb-cs:focus-visible { box-shadow: 0 0 0 2px rgba(200,185,122,0.5); }
+  .tb-cs:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent); }
 
   .tb-cs-bar {
     width: 14px;
@@ -152,13 +152,13 @@ const S = `
     top: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%);
-    background: #161614;
-    border: 1px solid #2a2a26;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
     z-index: 500;
     box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
-    min-width: 170px;
+    min-width: 230px;
     animation: tb-pop 0.14s cubic-bezier(0.16,1,0.3,1) both;
   }
   @keyframes tb-pop {
@@ -170,13 +170,13 @@ const S = `
     font-size: 9.5px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #4a4a46;
+    color: var(--text-faint);
     margin-bottom: 9px;
     padding: 0 1px;
   }
   .tb-grid {
     display: grid;
-    grid-template-columns: repeat(8, 18px);
+    grid-template-columns: repeat(10, 18px);
     gap: 4px;
   }
   .tb-dot {
@@ -189,21 +189,59 @@ const S = `
     flex-shrink: 0;
   }
   .tb-dot:hover { transform: scale(1.22); }
-  .tb-dot.sel { box-shadow: 0 0 0 2px #c8b97a; }
+  .tb-dot.sel { box-shadow: 0 0 0 2px var(--accent); }
+  .tb-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .tb-custom input[type="color"] {
+    width: 34px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .tb-custom input[type="text"] {
+    min-width: 0;
+    flex: 1;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 0 8px;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 10px;
+    outline: none;
+  }
 `;
 
 const TEXT_COLORS = [
-  "#e8e6e0","#c8b97a","#7dd3c8","#7db8f7",
-  "#c77dda","#f47a7a","#f7a96b","#6bcb77",
-  "#a0c4ff","#caffbf","#ffd6a5","#ffc6ff",
-  "#8a8880","#5a5a56","#ffffff","#000000",
+  "#111827", "#374151", "#6b7280", "#9ca3af", "#ffffff",
+  "#991b1b", "#dc2626", "#f97316", "#ca8a04", "#eab308",
+  "#166534", "#16a34a", "#0f766e", "#14b8a6", "#0891b2",
+  "#1d4ed8", "#2563eb", "#4f46e5", "#7c3aed", "#a855f7",
+  "#be185d", "#e11d48", "#f43f5e", "#fb7185", "#f9a8d4",
+  "#256f68", "#d6bd6a", "#7dd3c8", "#7db8f7", "#c77dda",
+  "#191714", "#5f5a50", "#918878", "#eeeae1", "#000000",
 ];
 const HIGHLIGHT_COLORS = [
-  "rgba(200,185,122,0.3)","rgba(125,211,200,0.3)","rgba(125,184,247,0.3)","rgba(199,125,218,0.3)",
-  "rgba(244,122,122,0.3)","rgba(247,169,107,0.3)","rgba(107,203,119,0.3)","rgba(160,196,255,0.3)",
-  "#c8b97a","#7dd3c8","#7db8f7","#c77dda",
-  "#f47a7a","#f7a96b","#6bcb77","#a0c4ff",
+  "#fef08a", "#fde68a", "#fed7aa", "#fecaca", "#fbcfe8",
+  "#e9d5ff", "#ddd6fe", "#c7d2fe", "#bfdbfe", "#bae6fd",
+  "#a5f3fc", "#99f6e4", "#bbf7d0", "#d9f99d", "#fef3c7",
+  "#fde047", "#facc15", "#fb923c", "#f87171", "#f472b6",
+  "#c084fc", "#818cf8", "#60a5fa", "#22d3ee", "#2dd4bf",
+  "#4ade80", "#a3e635", "#d6bd6a", "#7dd3c8", "#7db8f7",
+  "#f47a7a", "#f7a96b", "#6bcb77", "#a0c4ff", "#ffc6ff",
 ];
+
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 /* ─────────────────────────────────────────────────────────
    Sub-components
@@ -235,6 +273,9 @@ function ColorBtn({ icon, tip, label, colors, active, bar, onChange }: {
   onChange: (c: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [customColor, setCustomColor] = useState(
+    HEX_COLOR.test(active) ? active : colors[0],
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -245,6 +286,11 @@ function ColorBtn({ icon, tip, label, colors, active, bar, onChange }: {
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, [open]);
+
+  const selectColor = (color: string) => {
+    onChange(color);
+    if (HEX_COLOR.test(color)) setCustomColor(color);
+  };
 
   return (
     <div style={{ position: "relative", flexShrink: 0 }} ref={ref}>
@@ -264,17 +310,44 @@ function ColorBtn({ icon, tip, label, colors, active, bar, onChange }: {
           <div className="tb-panel-label">{label}</div>
           <div className="tb-grid">
             {colors.map(c => (
-              <div
+              <button
+                type="button"
                 key={c}
                 className={`tb-dot${active === c ? " sel" : ""}`}
                 style={{ background: c }}
                 title={c}
-                role="button"
-                tabIndex={0}
-                onClick={() => { onChange(c); setOpen(false); }}
-                onKeyDown={e => { if (e.key === "Enter") { onChange(c); setOpen(false); } }}
+                aria-label={`${label} ${c}`}
+                onClick={() => { selectColor(c); setOpen(false); }}
               />
             ))}
+          </div>
+          <div className="tb-custom">
+            <input
+              type="color"
+              value={customColor}
+              aria-label={`Custom ${label.toLowerCase()}`}
+              onChange={(e) => {
+                setCustomColor(e.target.value);
+                selectColor(e.target.value);
+              }}
+            />
+            <input
+              type="text"
+              value={customColor}
+              aria-label={`${label} hex value`}
+              onChange={(e) => {
+                const next = e.target.value;
+                setCustomColor(next);
+                if (HEX_COLOR.test(next)) selectColor(next);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && HEX_COLOR.test(customColor)) {
+                  selectColor(customColor);
+                  setOpen(false);
+                }
+              }}
+              placeholder="#000000"
+            />
           </div>
         </div>
       )}

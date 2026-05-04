@@ -1,8 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  color-scheme: light;
+
+  --bg: #f6f2e8;
+  --surface: #ffffff;
+  --surface-2: #ebe3d4;
+  --surface2: var(--surface-2);
+  --border: #cfc2ae;
+  --border2: #ad9d86;
+
+  --text: #191714;
+  --text-soft: #4c463c;
+  --text-faint: #6f6455;
+
+  /* Warm olive/amber accent — same family as dark mode gold */
+  --accent: #7a5c1e; /* warm dark amber, readable on cream */
+  --accent-hover: #5e4415; /* deeper amber for hover */
+  --accent-soft: #f0e0b0; /* warm tint, harmonizes with --bg */
+  --accent-dim: var(--accent-soft);
+
+  --danger: #c0341f; /* slightly warmer red, better contrast */
+  --success: #3d6e35; /* warm olive green, not competing with accent */
+
+  --background: var(--bg);
+  --foreground: var(--text);
+}
+
+:root.dark,
+html.dark {
+  color-scheme: dark;
+
+  --bg: #11120f;
+  --surface: #191a16;
+  --surface-2: #22231e;
+  --surface2: var(--surface-2);
+  --border: #34352e;
+  --border2: #414238;
+
+  --text: #eeeae1;
+  --text-soft: #aaa397;
+  --text-faint: #6f695f;
+
+  --accent: #d6bd6a;
+  --accent-hover: #ead489;
+  --accent-soft: rgba(214, 189, 106, 0.14);
+  --accent-dim: var(--accent-soft);
+
+  --danger: #ff7a70;
+  --success: #75d6a0;
+
+  --background: var(--bg);
+  --foreground: var(--text);
 }
 
 @theme inline {
@@ -21,7 +70,7 @@ body {
 .notivo-editor {
   line-height: 1.75;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--text);
   padding: 1.25rem 1.5rem;
   min-height: calc(100vh - 300px);
   letter-spacing: 0.2px;
@@ -51,7 +100,7 @@ body {
   font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
-  color: #0f172a;
+  color: var(--text);
 }
 
 @media (min-width: 640px) {
@@ -72,7 +121,7 @@ body {
   font-weight: 700;
   margin-top: 1.3rem;
   margin-bottom: 0.4rem;
-  color: #1e293b;
+  color: var(--text);
 }
 
 @media (min-width: 640px) {
@@ -92,7 +141,7 @@ body {
   line-height: 1.35;
   font-weight: 600;
   margin-top: 1.1rem;
-  color: #334155;
+  color: var(--text-soft);
 }
 
 @media (min-width: 640px) {
@@ -121,34 +170,34 @@ body {
 }
 
 .notivo-editor ul li::marker {
-  color: #7c3aed;
+  color: var(--accent);
 }
 
 .notivo-editor ol li::marker {
-  color: #7c3aed;
+  color: var(--accent);
   font-weight: 600;
 }
 
 .notivo-editor blockquote {
-  border-left: 4px solid #7c3aed;
+  border-left: 4px solid var(--accent);
   padding-left: 1.5rem;
-  color: #475569;
+  color: var(--text-soft);
   font-style: italic;
   margin-left: 0;
 }
 
 .notivo-editor code {
-  background-color: #f1f5f9;
+  background-color: var(--surface-2);
   border-radius: 0.4rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.95em;
-  color: #d946ef;
-  font-family: 'Monaco', 'Courier New', monospace;
+  color: var(--accent);
+  font-family: "Monaco", "Courier New", monospace;
 }
 
 .notivo-editor pre {
-  background-color: #1e293b;
-  color: #e2e8f0;
+  background-color: var(--surface-2);
+  color: var(--text);
   padding: 1.5rem;
   border-radius: 0.75rem;
   overflow-x: auto;
@@ -159,13 +208,13 @@ body {
 
 .notivo-editor pre code {
   background-color: transparent;
-  color: #e2e8f0;
+  color: var(--text);
   padding: 0;
   border-radius: 0;
 }
 
 .notivo-editor a {
-  color: #7c3aed;
+  color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 2px;
@@ -173,21 +222,21 @@ body {
 }
 
 .notivo-editor a:hover {
-  color: #6d28d9;
+  color: var(--accent-hover);
 }
 
 .notivo-editor strong {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .notivo-editor em {
   font-style: italic;
-  color: #334155;
+  color: var(--text-soft);
 }
 
 .notivo-editor mark {
-  background-color: #fde047;
+  background-color: var(--accent-soft);
   padding: 2px 4px;
   border-radius: 2px;
 }
@@ -209,13 +258,13 @@ body {
   height: 1.25rem;
   margin-right: 0.75rem;
   cursor: pointer;
-  accent-color: #7c3aed;
+  accent-color: var(--accent);
 }
 
 .notivo-editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #cbd5e1;
+  color: var(--text-faint);
   pointer-events: none;
   height: 0;
   font-weight: 300;

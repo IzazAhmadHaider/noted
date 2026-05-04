@@ -1,19 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { NoteEditor } from "@/components/note-editor";
+
+type ThemeMode = "light" | "dark";
 
 export function AuthenticatedEditor() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = window.localStorage.getItem("notivo-theme") as ThemeMode | null;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return saved === "light" || saved === "dark" ? saved : prefersDark ? "dark" : "light";
+  });
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem("notivo-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => current === "dark" ? "light" : "dark");
+  }, []);
 
   if (loading) {
     return (
@@ -42,7 +61,7 @@ export function AuthenticatedEditor() {
           {/* Brand */}
           <div className="ae-brand">
             <div className="ae-brand-mark">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0f0f0d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11.5 2.5l2 2L5 13l-3 1 1-3z"/>
               </svg>
             </div>
@@ -59,6 +78,16 @@ export function AuthenticatedEditor() {
               <span className="ae-user-email">{user.email}</span>
             </div>
             <div className="ae-avatar" aria-label={username}>{initials}</div>
+            <button
+              type="button"
+              className="ae-theme-toggle"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+              <span>{theme === "dark" ? "Light" : "Dark"}</span>
+            </button>
             <button
               type="button"
               className="ae-signout"
@@ -89,19 +118,6 @@ export function AuthenticatedEditor() {
 ───────────────────────────────────────────────────────── */
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&display=swap');
-
-  :root {
-    --bg:         #0f0f0d;
-    --surface:    #161614;
-    --surface2:   #1e1e1b;
-    --border:     #2a2a26;
-    --border2:    #333330;
-    --text:       #e8e6e0;
-    --text-soft:  #8a8880;
-    --text-faint: #4a4a46;
-    --accent:     #c8b97a;
-    --accent-dim: rgba(200,185,122,0.12);
-  }
 
   @keyframes ae-fade {
     from { opacity: 0; transform: translateY(-6px); }
@@ -147,7 +163,7 @@ const STYLES = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 0 0 1px rgba(200,185,122,0.3), 0 2px 8px rgba(200,185,122,0.15);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 8px color-mix(in srgb, var(--accent) 18%, transparent);
   }
   .ae-brand-text {
     display: flex;
@@ -200,7 +216,7 @@ const STYLES = `
     height: 30px;
     border-radius: 8px;
     background: var(--accent-dim);
-    border: 1px solid rgba(200,185,122,0.2);
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
     color: var(--accent);
     font-size: 0.65rem;
     font-weight: 500;
@@ -212,6 +228,7 @@ const STYLES = `
     user-select: none;
   }
 
+  .ae-theme-toggle,
   .ae-signout {
     display: flex;
     align-items: center;
@@ -228,6 +245,14 @@ const STYLES = `
     transition: border-color 0.15s, color 0.15s, background 0.15s;
     white-space: nowrap;
   }
+  .ae-theme-toggle {
+    color: var(--text-soft);
+  }
+  .ae-theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
   .ae-signout:hover {
     border-color: var(--text-faint);
     color: var(--text);
@@ -237,7 +262,9 @@ const STYLES = `
     transform: scale(0.96);
   }
   @media (max-width: 480px) {
+    .ae-theme-toggle span,
     .ae-signout span { display: none; }
+    .ae-theme-toggle,
     .ae-signout { padding: 0.38rem 0.55rem; }
   }
 
@@ -263,7 +290,7 @@ const LOAD_STYLES = `
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: #0f0f0d;
+    background: var(--bg);
   }
   .ae-load-dots {
     display: flex;
@@ -274,7 +301,7 @@ const LOAD_STYLES = `
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #c8b97a;
+    background: var(--accent);
     animation: ae-dot 1.2s ease-in-out infinite;
   }
   .ae-load-dots span:nth-child(2) { animation-delay: 0.2s; }

@@ -16,31 +16,34 @@ export function DeletePageModal({ page, onConfirm, onCancel }: DeletePageModalPr
       onClick={onCancel}
     >
       <div
-        className="bg-[#161614] border border-[#333330] rounded-2xl p-8 w-[360px] max-w-[90vw] shadow-[0_32px_80px_rgba(0,0,0,0.6)] animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)_both]"
+        className="bg-[var(--surface)] border border-[var(--border2)] rounded-2xl p-8 w-[360px] max-w-[90vw] shadow-[0_32px_80px_rgba(0,0,0,0.35)] animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)_both]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Icon */}
-        <div className="w-10 h-10 rounded-[10px] bg-[rgba(224,82,82,0.1)] border border-[rgba(224,82,82,0.2)] flex items-center justify-center mb-4 text-[#e05252]">
+        <div className="w-10 h-10 rounded-[10px] bg-[color-mix(in_srgb,var(--danger)_12%,transparent)] border border-[color-mix(in_srgb,var(--danger)_24%,transparent)] flex items-center justify-center mb-4 text-[var(--danger)]">
           <IconTrash size={15} />
         </div>
 
-        <h2 className="font-['Instrument_Serif'] text-xl text-[#e8e6e0] mb-2">
+        <h2 className="font-['Instrument_Serif'] text-xl text-[var(--text)] mb-2">
           Delete page?
         </h2>
-        <p className="text-[0.78rem] text-[#8a8880] leading-relaxed mb-6">
-          <span className="text-[#e8e6e0] font-medium">"{page.title}"</span> will be
+        <p className="text-[0.78rem] text-[var(--text-soft)] leading-relaxed mb-6">
+          <span className="text-[var(--text)] font-medium">
+            &quot;{page.title}&quot;
+          </span>{" "}
+          will be
           permanently removed. This action cannot be undone.
         </p>
 
         <div className="flex gap-2.5 justify-end">
           <button
-            className="px-4 py-2 rounded-[7px] border border-[#333330] text-[#8a8880] text-[0.75rem] font-['Geist_Mono'] cursor-pointer transition-all hover:border-[#8a8880] hover:text-[#e8e6e0]"
+            className="px-4 py-2 rounded-[7px] border border-[var(--border2)] text-[var(--text-soft)] text-[0.75rem] font-['Geist_Mono'] cursor-pointer transition-all hover:border-[var(--text-soft)] hover:text-[var(--text)]"
             onClick={onCancel}
           >
             Cancel
           </button>
           <button
-            className="px-4 py-2 rounded-[7px] border border-[#e05252] bg-[#e05252] text-white text-[0.75rem] font-['Geist_Mono'] cursor-pointer transition-all hover:bg-transparent hover:text-[#e05252]"
+            className="px-4 py-2 rounded-[7px] border border-[var(--danger)] bg-[var(--danger)] text-white text-[0.75rem] font-['Geist_Mono'] cursor-pointer transition-all hover:bg-transparent hover:text-[var(--danger)]"
             onClick={onConfirm}
           >
             Delete page

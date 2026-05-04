@@ -62,10 +62,10 @@ const ANIM_STYLES = `
     font-family: 'Instrument Serif', serif;
     font-size: 1.15rem;
     line-height: 1.9;
-    color: #e8e6e0;
+    color: var(--text);
     outline: none;
     min-height: 60vh;
-    caret-color: #c8b97a;
+    caret-color: var(--accent);
     width: 100%;
   }
   .ne-prose p { margin-bottom: 0.75em; }
@@ -76,34 +76,34 @@ const ANIM_STYLES = `
   .ne-prose ol { padding-left: 1.6em; margin-bottom: 0.75em; }
   .ne-prose li { margin-bottom: 0.3em; }
   .ne-prose blockquote {
-    border-left: 2px solid #c8b97a;
+    border-left: 2px solid var(--accent);
     padding-left: 1.2em;
-    color: #8a8880;
+    color: var(--text-soft);
     font-style: italic;
     margin: 0 0 0.75em;
   }
   .ne-prose code {
     font-family: 'Geist Mono', monospace;
     font-size: 0.82em;
-    background: #1e1e1b;
-    border: 1px solid #2a2a26;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
     padding: 0.1em 0.4em;
     border-radius: 4px;
-    color: #c8b97a;
+    color: var(--accent);
   }
   .ne-prose pre {
-    background: #1e1e1b;
-    border: 1px solid #2a2a26;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 1em 1.2em;
     margin-bottom: 0.75em;
     overflow-x: auto;
   }
   .ne-prose pre code { background: transparent; border: none; padding: 0; font-size: 0.85em; }
-  .ne-prose hr { border: none; border-top: 1px solid #333330; margin: 1.5em 0; }
+  .ne-prose hr { border: none; border-top: 1px solid var(--border2); margin: 1.5em 0; }
   .ne-prose .is-editor-empty:first-child::before {
     content: attr(data-placeholder);
-    color: #4a4a46;
+    color: var(--text-faint);
     pointer-events: none;
     float: left;
     height: 0;
@@ -111,7 +111,7 @@ const ANIM_STYLES = `
   }
   .ne-prose ul[data-type="taskList"] { list-style: none; padding-left: 0.5em; }
   .ne-prose ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 0.6em; }
-  .ne-prose ul[data-type="taskList"] input[type="checkbox"] { margin-top: 0.4em; accent-color: #c8b97a; }
+  .ne-prose ul[data-type="taskList"] input[type="checkbox"] { margin-top: 0.4em; accent-color: var(--accent); }
 `;
 
 /* ── Icon: sticky note pin ── */
@@ -128,6 +128,7 @@ export function NoteEditor({ userId }: { userId: string }) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -293,14 +294,14 @@ export function NoteEditor({ userId }: { userId: string }) {
     return (
       <>
         <style>{ANIM_STYLES}</style>
-        <div className="flex flex-col items-center justify-center h-screen bg-[#0f0f0d] gap-4">
+        <div className="flex flex-col items-center justify-center h-full bg-[var(--bg)] gap-4">
           <div className="flex gap-1.5">
             {[0, 0.2, 0.4].map((delay, i) => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full bg-[#c8b97a] animate-[dotBounce_1.2s_ease-in-out_infinite]"
+              <span key={i} className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-[dotBounce_1.2s_ease-in-out_infinite]"
                 style={{ animationDelay: `${delay}s` }} />
             ))}
           </div>
-          <span className="text-[0.68rem] tracking-[0.2em] uppercase text-[#4a4a46] font-['Geist_Mono']">
+          <span className="text-[0.68rem] tracking-[0.2em] uppercase text-[var(--text-faint)] font-['Geist_Mono']">
             Loading pages
           </span>
         </div>
@@ -320,7 +321,7 @@ export function NoteEditor({ userId }: { userId: string }) {
         />
       )}
 
-      <div className="flex h-screen bg-[#0f0f0d] font-['Geist_Mono'] text-[#e8e6e0] overflow-hidden">
+      <div className="relative flex h-full min-h-0 bg-[var(--bg)] font-['Geist_Mono'] text-[var(--text)] overflow-hidden">
 
         {/* ── Sidebar ── */}
         <PageSidebar
@@ -328,7 +329,9 @@ export function NoteEditor({ userId }: { userId: string }) {
           activePageId={activePageId}
           renamingId={renamingId}
           renameValue={renameValue}
+          isMobileOpen={isSidebarOpen}
           onSelectPage={setActivePageId}
+          onCloseMobile={() => setIsSidebarOpen(false)}
           onStartRename={(page) => { setRenamingId(page.id); setRenameValue(page.title); }}
           onCommitRename={commitRename}
           onCancelRename={() => setRenamingId(null)}
@@ -336,6 +339,15 @@ export function NoteEditor({ userId }: { userId: string }) {
           onConfirmDelete={setDeleteTarget}
           onNewPage={createNewPage}
         />
+
+        {isSidebarOpen && (
+          <button
+            type="button"
+            className="lg:hidden absolute inset-0 z-30 bg-black/55 backdrop-blur-[1px]"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close pages"
+          />
+        )}
 
         {/* ── Main ── */}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0 animate-[fadeIn_0.5s_0.1s_cubic-bezier(0.16,1,0.3,1)_both]">
@@ -346,14 +358,15 @@ export function NoteEditor({ userId }: { userId: string }) {
             isSaving={isSaving}
             wordCount={wordCount}
             onToggleEdit={() => setIsEditMode((v) => !v)}
+            onToggleSidebar={() => setIsSidebarOpen(true)}
           />
 
           {/* Formatting toolbar */}
           <div className={[
-            "overflow-hidden shrink-0 transition-all duration-[350ms] ease-[cubic-bezier(0.16,1,0.3,1)] border-b",
-            isEditMode ? "max-h-[60px] border-[#2a2a26]" : "max-h-0 border-transparent",
+            "overflow-hidden shrink-0 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] border-b",
+            isEditMode ? "max-h-15 border-[var(--border)]" : "max-h-0 border-transparent",
           ].join(" ")}>
-            <div className="px-7 py-2.5">
+            <div className="px-3 sm:px-5 lg:px-7 py-2.5">
               <EditorToolbar
                 canBold={editor.can().chain().focus().toggleBold().run()}
                 canItalic={editor.can().chain().focus().toggleItalic().run()}
@@ -407,10 +420,10 @@ export function NoteEditor({ userId }: { userId: string }) {
           {activePage ? (
             <div
               ref={editorScrollRef}
-              className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#333330] relative"
+              className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[var(--border2)] relative"
             >
               {/* Editor prose */}
-              <div className="w-full px-7 pt-10 pb-24 animate-[scaleIn_0.4s_0.2s_cubic-bezier(0.16,1,0.3,1)_both]">
+              <div className="w-full px-4 sm:px-6 lg:px-7 pt-6 sm:pt-8 lg:pt-10 pb-20 sm:pb-24 animate-[scaleIn_0.4s_0.2s_cubic-bezier(0.16,1,0.3,1)_both]">
                 <EditorContent editor={editor} />
               </div>
 
@@ -427,7 +440,7 @@ export function NoteEditor({ userId }: { userId: string }) {
                       sticky.openDraftFromSelection();
                       setSelToolbar(null);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.68rem] font-['Geist_Mono'] tracking-wide text-[#1a1a16] bg-[#f9e87f] border border-[#e6c619] shadow-[0_4px_16px_rgba(0,0,0,0.35)] hover:bg-[#fde84a] transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.68rem] font-['Geist_Mono'] tracking-wide text-[var(--bg)] bg-[var(--accent)] border border-[var(--accent-hover)] shadow-[0_4px_16px_rgba(0,0,0,0.22)] hover:bg-[var(--accent-hover)] transition-colors"
                   >
                     <IconPin />
                     Add note
@@ -474,16 +487,16 @@ export function NoteEditor({ userId }: { userId: string }) {
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#4a4a46]">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[var(--text-faint)]">
               <span className="text-3xl opacity-25">✦</span>
-              <span className="text-[0.72rem] tracking-[0.12em] uppercase">No pages yet — create one</span>
+              <span className="text-[0.68rem] sm:text-[0.72rem] tracking-[0.12em] uppercase text-center px-4">No pages yet — create one</span>
             </div>
           )}
 
           {/* Read-only hint */}
           {!isEditMode && activePage && (
-            <div className="shrink-0 py-2.5 text-center text-[0.65rem] tracking-[0.12em] uppercase text-[#4a4a46] border-t border-[#2a2a26]">
-              Click <span className="text-[#8a8880]">🔒 Locked</span> to start writing
+            <div className="shrink-0 py-2.5 px-4 text-center text-[0.58rem] sm:text-[0.65rem] tracking-[0.12em] uppercase text-[var(--text-faint)] border-t border-[var(--border)]">
+              Click <span className="text-[var(--text-soft)]">🔒 Locked</span> to start writing
             </div>
           )}
         </main>

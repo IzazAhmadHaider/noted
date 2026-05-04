@@ -2,31 +2,41 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Pencil, Check, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setMessage("");
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        await resetPassword(email);
+        setMessage("Password reset instructions have been sent to your email.");
+      } else if (isSignUp) {
+        const submittedEmail = email;
         await signUp(email, password);
         setError("");
         setEmail("");
         setPassword("");
         setSignUpSuccess(true);
         setIsSignUp(false);
+        setMessage(`A confirmation email has been sent to ${submittedEmail}.`);
       } else {
         await signIn(email, password);
         router.push("/");
@@ -34,16 +44,32 @@ export default function LoginPage() {
     } catch (err) {
       const errorMessage = (err as Error).message || "An error occurred";
       // Better error messages for common auth issues
-      if (errorMessage.includes("Invalid login credentials") || errorMessage.includes("no email found")) {
-        setError("Email not found or not confirmed. Please check your email for confirmation link.");
+      if (
+        errorMessage.includes("Invalid login credentials") ||
+        errorMessage.includes("no email found")
+      ) {
+        setError(
+          "Email not found or not confirmed. Please check your email for confirmation link.",
+        );
       } else if (errorMessage.includes("Email not confirmed")) {
-        setError("Please confirm your email before logging in. Check your inbox for the confirmation link.");
+        setError(
+          "Please confirm your email before logging in. Check your inbox for the confirmation link.",
+        );
       } else {
         setError(errorMessage);
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const returnToSignIn = () => {
+    setIsForgotPassword(false);
+    setIsSignUp(false);
+    setError("");
+    setMessage("");
+    setSignUpSuccess(false);
+    setShowPassword(false);
   };
 
   return (
@@ -59,13 +85,17 @@ export default function LoginPage() {
             {/* Logo and Title */}
             <div className="mb-8 sm:mb-10 text-center">
               <div className="mb-3 sm:mb-4 inline-flex h-12 sm:h-14 w-12 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600">
-                <span className="text-lg sm:text-xl font-bold text-white">✎</span>
+                <Pencil className="h-5 w-5 text-white" aria-hidden="true" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Notivo</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                Notivo
+              </h1>
               <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-slate-600">
-                {isSignUp
-                  ? "Create your account and start writing"
-                  : "Welcome back to your notes"}
+                {isForgotPassword
+                  ? "Enter your email to reset your password"
+                  : isSignUp
+                    ? "Create your account and start writing"
+                    : "Welcome back to your notes"}
               </p>
             </div>
 
@@ -85,28 +115,68 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password Input */}
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-900 mb-1.5 sm:mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 px-3 sm:px-4 py-2.5 sm:py-3 text-slate-900 placeholder-slate-400 transition-all focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:outline-none text-sm sm:text-base"
-                  placeholder="••••••••"
-                />
-              </div>
+              {!isForgotPassword && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-900 mb-1.5 sm:mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 px-3 sm:px-4 py-2.5 sm:py-3 pr-11 text-slate-900 placeholder-slate-400 transition-all focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:outline-none text-sm sm:text-base"
+                      placeholder="Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-900"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} aria-hidden="true" />
+                      ) : (
+                        <Eye size={18} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              {/* Success Message - Email Confirmation */}
-              {signUpSuccess && !error && (
+              {!isSignUp && !isForgotPassword && (
+                <div className="-mt-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(true);
+                      setError("");
+                      setMessage("");
+                      setSignUpSuccess(false);
+                    }}
+                    className="text-xs sm:text-sm font-semibold text-purple-600 transition-colors hover:text-purple-700"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {(signUpSuccess || message) && !error && (
                 <div className="flex items-start gap-2 rounded-lg sm:rounded-xl bg-green-50 p-3 sm:p-4 text-xs sm:text-sm text-green-700 border border-green-200">
-                  <span className="mt-0.5">✓</span>
+                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
                   <div>
-                    <p className="font-semibold">Account created successfully!</p>
-                    <p className="mt-1">A confirmation email has been sent to <strong>{email}</strong>. Please click the link in the email to confirm your account before logging in.</p>
+                    <p className="font-semibold">
+                      {isForgotPassword
+                        ? "Check your email"
+                        : "Account created successfully!"}
+                    </p>
+                    <p className="mt-1">
+                      {message ||
+                        "Please click the link in the email to confirm your account before logging in."}
+                    </p>
                   </div>
                 </div>
               )}
@@ -114,7 +184,10 @@ export default function LoginPage() {
               {/* Error Message */}
               {error && (
                 <div className="flex items-start gap-2 rounded-lg sm:rounded-xl bg-red-50 p-3 sm:p-4 text-xs sm:text-sm text-red-700 border border-red-200">
-                  <span className="mt-0.5">⚠️</span>
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>{error}</span>
                 </div>
               )}
@@ -130,6 +203,8 @@ export default function LoginPage() {
                     <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Processing...
                   </span>
+                ) : isForgotPassword ? (
+                  "Send Reset Link"
                 ) : isSignUp ? (
                   "Create Account"
                 ) : (
@@ -148,17 +223,28 @@ export default function LoginPage() {
             {/* Toggle Sign In / Sign Up */}
             <div className="text-center">
               <p className="text-xs sm:text-sm text-slate-600">
-                {isSignUp ? "Already have an account? " : "New to Notivo? "}
+                {isForgotPassword
+                  ? "Remembered your password? "
+                  : isSignUp
+                    ? "Already have an account? "
+                    : "New to Notivo? "}
                 <button
                   type="button"
                   onClick={() => {
+                    if (isForgotPassword) {
+                      returnToSignIn();
+                      return;
+                    }
+
                     setIsSignUp(!isSignUp);
                     setError("");
+                    setMessage("");
                     setSignUpSuccess(false);
+                    setShowPassword(false);
                   }}
                   className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
                 >
-                  {isSignUp ? "Sign In" : "Create one"}
+                  {isForgotPassword ? "Sign In" : isSignUp ? "Sign In" : "Create one"}
                 </button>
               </p>
             </div>
